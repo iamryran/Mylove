@@ -515,7 +515,7 @@ const planetMaterial = new _0x9dc5f4.ShaderMaterial({
 const planet = new _0x9dc5f4.Mesh(planetGeometry, planetMaterial);
 planet.position.set(0x0, 0x0, 0x0);
 scene.add(planet);
-const ringTexts = ["Love", ...(window.dataLove2Loveloom && window.dataLove2Loveloom.data.ringTexts ? window.dataLove2Loveloom.data.ringTexts : [])];
+const ringTexts = ["Happy Birthday Em Iu", ...(window.dataLove2Loveloom && window.dataLove2Loveloom.data.ringTexts ? window.dataLove2Loveloom.data.ringTexts : [])];
 function createTextRings() {
   const _0xf435b3 = ringTexts.length;
   window.textRings = [];
@@ -869,6 +869,7 @@ function animate() {
   });
   planet.lookAt(camera.position);
   animatePlanetSystem();
+  
   if (starField && starField.material && starField.material.opacity !== undefined) {
     starField.material.opacity = 0x1;
     starField.material.transparent = false;
@@ -918,6 +919,169 @@ window.addEventListener("resize", () => {
   controls.target.set(0x0, 0x0, 0x0);
   controls.update();
 });
+// Biến để theo dõi dialog lá thư
+let letterDialog = null;
+let showLetterDialog = false;
+
+function createLetterDialog() {
+  // Tạo container div cho dialog
+  const dialogContainer = document.createElement('div');
+  dialogContainer.id = 'letter-dialog';
+  dialogContainer.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+    pointer-events: none;
+  `;
+
+  // Tạo lá thư
+  const letter = document.createElement('div');
+  letter.style.cssText = `
+    background: linear-gradient(135deg, #fff8e1, #f5f5dc);
+    border: 3px solid #d4af37;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    padding: 40px;
+    max-width: 500px;
+    max-height: 70vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.8);
+    transition: transform 0.5s ease-in-out;
+    font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
+    
+    /* Ẩn thanh scroll */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  `;
+
+  // CSS để ẩn scrollbar cho webkit browsers
+  const hideScrollbarStyle = document.createElement('style');
+  hideScrollbarStyle.textContent = `
+    #letter-dialog div::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+  `;
+  document.head.appendChild(hideScrollbarStyle);
+
+  // Nội dung lá thư đơn giản
+  letter.innerHTML = `
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h2 style="color: #8b4513; margin: 0; font-size: 28px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+        💌 Thư Gửi Em 💌
+      </h2>
+    </div>
+    
+    <div style="color: #4a4a4a; line-height: 1.8; font-size: 16px; text-align: justify;">
+      <p style="margin-bottom: 20px;">
+        <strong>Em yêu của anh,</strong>
+      </p>
+      
+      <p style="margin-bottom: 20px;">
+        Khi em đọc những dòng này, anh hy vọng em đang cảm thấy hạnh phúc và được yêu thương. 
+        Vũ trụ này được tạo ra với tất cả tình yêu của anh dành cho em.
+      </p>
+      
+      <p style="margin-bottom: 20px;">
+        Mỗi ngôi sao trong đây đại diện cho một kỷ niệm đẹp của chúng ta, 
+        mỗi tinh cầu là một ước mơ anh muốn thực hiện cùng em.
+      </p>
+      
+      <p style="margin-bottom: 20px;">
+        Anh yêu em nhiều hơn cả những vì sao trên bầu trời, 
+        sâu sắc hơn cả đại dương, và bền vững hơn cả thời gian.
+      </p>
+      
+      <p style="margin-bottom: 30px; text-align: center; font-style: italic;">
+        <strong>Chúc mừng sinh nhật em! ❤️</strong>
+      </p>
+
+    <p style="margin-bottom: 20px;">
+     Chúc em tuổi mới tràn đầy niềm vui, sức khỏe và hạnh phúc.
+     Tuổi mới sẽ yêu anh nhiều hơn cả những vì sao trên bầu trời này =)))
+    </p>
+
+
+      
+      <p style="text-align: right; margin-bottom: 0;">
+        <em>Với tất cả tình yêu,<br/>
+        Khiem ❤️</em>
+      </p>
+    </div>
+    
+    <button id="close-letter" style="
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    " onmouseover="this.style.background='#ff5252'" onmouseout="this.style.background='#ff6b6b'">
+      ✕
+    </button>
+  `;
+
+  dialogContainer.appendChild(letter);
+  document.body.appendChild(dialogContainer);
+
+  // Xử lý sự kiện đóng
+  const closeBtn = document.getElementById('close-letter');
+  closeBtn.addEventListener('click', function() {
+    closeLetterDialog();
+  });
+
+  // Đóng khi click bên ngoài
+  dialogContainer.addEventListener('click', function(e) {
+    if (e.target === dialogContainer) {
+      closeLetterDialog();
+    }
+  });
+
+  return dialogContainer;
+}
+
+function showLetterDialogFunc() {
+  if (!letterDialog) {
+    letterDialog = createLetterDialog();
+  }
+  
+  // Hiển thị dialog với hiệu ứng fade in
+  setTimeout(() => {
+    letterDialog.style.pointerEvents = 'auto';
+    letterDialog.style.opacity = '1';
+    const letter = letterDialog.querySelector('div');
+    letter.style.transform = 'scale(1)';
+  }, 100);
+}
+
+function closeLetterDialog() {
+  if (letterDialog) {
+    letterDialog.style.opacity = '0';
+    const letter = letterDialog.querySelector('div');
+    letter.style.transform = 'scale(0.8)';
+    
+    setTimeout(() => {
+      letterDialog.style.pointerEvents = 'none';
+    }, 2000);
+  }
+}
+
 function startCameraAnimation() {
   const _0x468ee6 = {
     'x': camera.position.x,
@@ -968,11 +1132,21 @@ function startCameraAnimation() {
             'z': 0xa0 + -60 * _0x455096
           };
         } else {
+          // Hoàn thành animation camera và hiển thị dialog lá thư
           camera.position.set(_0x10492f.x, 0x64, 0x64);
           camera.lookAt(0x0, 0x0, 0x0);
           controls.target.set(0x0, 0x0, 0x0);
           controls.update();
           controls.enabled = true;
+          
+          // Hiển thị dialog lá thư sau 1 giây
+          if (!showLetterDialog) {
+            showLetterDialog = true;
+            setTimeout(() => {
+              showLetterDialogFunc();
+            }, 1000);
+          }
+          
           return;
         }
       }
